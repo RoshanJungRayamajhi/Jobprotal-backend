@@ -18,7 +18,7 @@ const ConnnectDB = require("./config/db-config");
 
 
 // Routes Required
-const authRoutes = require("../backend/Routes/authRoutes")
+const authRoutes = require("./Routes/authRoutes")
 const companyRoutes = require("./Routes/companyRoutes")
 const jobRoutes = require("./Routes/jobRoutes")
 const applicationRoutes = require("./Routes/applicationRoutes")
