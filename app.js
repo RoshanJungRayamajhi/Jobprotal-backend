@@ -5,11 +5,24 @@ const cors = require("cors");
 require("dotenv").config();
 
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://jobprotal.netlify.app"
+];
+
 app.use(cors({
-    origin:process.env.LOCAL_URI,
-    credentials: true,
+  origin: function (origin, callback) {
+    // allow requests with no origin (Postman, server-side)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
 }));
-app.options("*", cors());
 
 const ConnnectDB = require("./config/db-config");
 
