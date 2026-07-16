@@ -29,7 +29,7 @@ module.exports.registerCompany = async (req, res) => {
         })
 
     } catch (error) {
-        res.json({
+        res.status(500).json({
             message: error.message,
             success: false,
         })

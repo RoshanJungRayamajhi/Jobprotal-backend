@@ -2,6 +2,7 @@ const express = require("express")
 const cookieparsers = require("cookie-parser")
 const app = express();
 const cors = require("cors");
+
 require("dotenv").config();
 
 
@@ -45,7 +46,6 @@ app.use("/api/auth", authRoutes)
 app.use("/api/company", companyRoutes)
 app.use("/api/job", jobRoutes)
 app.use("/api/application", applicationRoutes)
-
 
 
 const PORT = process.env.PORT || 3000;

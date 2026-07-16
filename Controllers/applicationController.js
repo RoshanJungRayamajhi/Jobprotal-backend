@@ -3,6 +3,13 @@ const express = require("express");
 const applicationModel = require("../models/application-model")
 const jobModel = require("../models/job-model")
 
+const { getAtsScore } = require("../utils/atsScorer");
+const { extractResumeText } = require("../utils/pdfText");
+
+const { sendMail } = require("../utils/mailer");
+const { acceptedEmail, rejectedEmail } = require("../utils/emailTemplates");
+
+
 
 
 
@@ -104,7 +111,6 @@ module.exports.getApplicants = async (req, res) => {
         const userId = req.id;
 
         const job = await jobModel.findById(jobId)
-       
 
         if (!job) {
             return res.status(404).json({
@@ -112,33 +118,50 @@ module.exports.getApplicants = async (req, res) => {
                 success: false,
             })
         }
-        if(job.createdBy.toString() !== userId){
+        if (job.createdBy.toString() !== userId) {
             return res.status(404).json({
                 message: "you are not authorized to view this job applicants",
                 success: false,
             })
         }
 
+        const applicant = await applicationModel.find({ job: jobId }).populate("applicant")
 
-        const applicant = await applicationModel.find({job:jobId}).populate("applicant")
-      
-        
-        // if(job?.applicants?.length < 1){
-        //     return res.status(404).json({
-        //         message: "no applicant found",
-        //         success: false,
-        //     })
-        // }
+        // compute ATS score for each applicant against this job
+        const applicantsWithScore = await Promise.all(
+            applicant.map(async (app) => {
+                const resumeUrl = app.applicant?.profile?.resume; // adjust this path to match your userModel schema
 
+                if (!resumeUrl) {
+                    return {
+                        ...app.toObject(),
+                        ats: null,
+                        atsError: "No resume uploaded"
+                    };
+                }
 
-       
-       
+                try {
+                    const resumeText = await extractResumeText(resumeUrl);
+                    const atsResult = await getAtsScore(resumeText, job);
+                    return {
+                        ...app.toObject(),
+                        ats: atsResult
+                    };
+                } catch (err) {
+                    return {
+                        ...app.toObject(),
+                        ats: null,
+                        atsError: err.message
+                    };
+                }
+            })
+        );
+
         return res.status(200).json({
-            message:"applicants found",
-            applicant,
+            message: "applicants found",
+            applicant: applicantsWithScore,
             success: true,
         })
-
 
     } catch (error) {
         res.status(404).json({
@@ -147,30 +170,63 @@ module.exports.getApplicants = async (req, res) => {
         })
     }
 }
-
 // yesma applicant id dina parxa tei ho kuro
+
+
+
+
 module.exports.updateStatus = async (req, res) => {
     try {
         const { status } = req.body;
         const applicationId = req.params.id
+
         if (!status) {
             return res.status(400).json({
                 message: "Status required",
                 success: false,
             })
         }
+
         const application = await applicationModel.findOne({
             _id: applicationId,
-        })
+        }).populate("applicant").populate({
+            path: "job",
+            populate: { path: "company" }
+        });
+
         if (!application) {
             return res.status(400).json({
                 message: "Application not found",
                 success: false
             })
         }
+
         // update status
         application.status = status.toLowerCase();
         await application.save();
+
+        // send email based on new status
+        const applicantEmail = application.applicant?.email;
+        const applicantName = application.applicant?.fullname || application.applicant?.name || "Applicant";
+        const jobTitle = application.job?.title || "the position";
+        const companyName = application.job?.company?.name || "the company";
+
+        if (applicantEmail) {
+            if (application.status === "accepted") {
+                await sendMail({
+                    to: applicantEmail,
+                    subject: `You've been accepted for ${jobTitle}!`,
+                    html: acceptedEmail(applicantName, jobTitle, companyName),
+                });
+            } else if (application.status === "rejected") {
+                await sendMail({
+                    to: applicantEmail,
+                    subject: `Update on your application for ${jobTitle}`,
+                    html: rejectedEmail(applicantName, jobTitle, companyName),
+                });
+            }
+        }
+
         return res.status(200).json({
             message: "Status Updated Successfully",
             success: true,

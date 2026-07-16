@@ -167,7 +167,7 @@ module.exports.updateProfile = async (req, res) => {
               resource_type: "auto",
             });
             user.profile.resume = secure_url;
-            user.profile.resumeOriginalName = file.originalname;
+            user.profile.resumeOriginalName = file?.originalname;
           }
           } catch (error) {
             console.error("Cloudinary upload error:", error.message);
