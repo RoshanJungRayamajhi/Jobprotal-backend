@@ -4,7 +4,7 @@ const getDataUri = require("../config/datauriConfig")
 const cloudinary = require("../config/cloudinaryConfig")
 
 
-export const registerCompany = async (req, res) => {
+module.exports.registerCompany = async (req, res) => {
   try {
     const {
       name,

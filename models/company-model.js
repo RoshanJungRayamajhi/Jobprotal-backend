@@ -62,7 +62,6 @@ const companySchema = new mongoose.Schema(
     // Contact
     hrname:{
         type: String,
-        required: true,
     },
     email: {
       type: String,
