@@ -228,9 +228,9 @@ module.exports.updateStatus = async (req, res) => {
         }
 
         return res.status(200).json({
-            message: "Status Updated Successfully",
+            message: "Status Updated Successfully and email sent to applicant",
             success: true,
-            application
+          
         })
 
     } catch (error) {
