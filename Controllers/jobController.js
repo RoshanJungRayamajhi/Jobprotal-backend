@@ -6,6 +6,7 @@ const jobModel = require("../models/job-model");
 module.exports.postjob = async (req, res) => {
     try {
         const { title, description, requirements, salary, location, jobType, experience, position, company } = req.body
+        console.log(req.body)
         const userId = req.id;
      
         if (!title || !description || !requirements || !salary || !location || !jobType || !experience || !position || !company) {
@@ -14,7 +15,8 @@ module.exports.postjob = async (req, res) => {
                 success: false,
             })
         }
-        let companydet = await companyModel.findById(company)
+        
+        let companydet = await companyModel.findOne({ name: company })
         if(!companydet) return res.status(404).json({
             message:"Company not found",
             success:false,
@@ -28,7 +30,7 @@ module.exports.postjob = async (req, res) => {
             jobType,
             experience,
             position,
-            company,
+            company:companydet._id,
             createdBy: userId,
         }
         )
