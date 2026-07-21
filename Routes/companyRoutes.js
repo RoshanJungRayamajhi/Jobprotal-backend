@@ -4,7 +4,7 @@ const { registerCompany, getCompany, getCompanybyId, updateCompany } = require("
 const router = express.Router()
 const upload = require("../config/multer")
 
-router.post("/register",isAuth,registerCompany)
+router.post("/register",isAuth,upload.single("file"),registerCompany)
 router.get("/get",isAuth,getCompany) 
 router.get("/get/:id",isAuth,getCompanybyId)
 router.post("/update/:id",isAuth,upload.single("file"),updateCompany)
