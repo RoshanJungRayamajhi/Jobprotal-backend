@@ -31,7 +31,6 @@ const companySchema = new mongoose.Schema(
 
     industry: {
       type: String,
-      required: true,
     },
 
     companySize: {
