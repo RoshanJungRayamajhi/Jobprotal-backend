@@ -26,19 +26,23 @@ module.exports.registerCompany = async (req, res) => {
       video,
     } = req.body;
 
+   
+    
+
     // Logged-in HR
     const creator = req.id;
+   
 
     // Required field validation
     if (!name || !description || !industry) {
       return res.status(400).json({
         success: false,
-        message: "Name, description and industry are required.",
+        message: "All required fields must be provided.",
       });
     }
 
     // Check if company already exists
-    const existingCompany = await Company.findOne({
+    const existingCompany = await companyModel.findOne({
       name: { $regex: new RegExp(`^${name}$`, "i") },
     });
 
@@ -91,7 +95,7 @@ module.exports.registerCompany = async (req, res) => {
     }
 
     // Create company
-    const company = await Company.create({
+    const company = await companyModel.create({
       creator,
       name,
       tagline,
