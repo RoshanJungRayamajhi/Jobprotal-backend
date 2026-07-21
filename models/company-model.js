@@ -12,7 +12,6 @@ const companySchema = new mongoose.Schema(
     // Basic Information
     name: {
       type: String,
-      required: true,
       trim: true,
     },
     companynumber:{
@@ -26,7 +25,6 @@ const companySchema = new mongoose.Schema(
 
     description: {
       type: String,
-      required: true,
     },
 
     industry: {
